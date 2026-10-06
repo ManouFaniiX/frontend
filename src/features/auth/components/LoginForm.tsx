@@ -1,154 +1,151 @@
 "use client"
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import * as z from "zod"
+import { useState, type FormEvent } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Boxes, Eye, EyeOff } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { authApi } from "@/features/auth/api/authApi"
+import type { LoginCredentials } from "@/features/auth/types/auth.types"
 
-const formSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères.")
-    .max(10, "Le nom d'utilisateur ne doit pas dépasser 10 caractères.")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Il ne peut contenir que des lettres, chiffres et underscores."
-    ),
-})
+export function LoginForm() {
+  const router = useRouter()
+  const [credentials, setCredentials] = useState<LoginCredentials>({ email: "", password: "" })
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
-export function FormRhfInput() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-    },
-  })
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError("")
+    setIsSubmitting(true)
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("Valeurs soumises avec succès :", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-zinc-900 p-4 text-zinc-100 border border-white/10">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-    })
+    try {
+      await authApi.login(credentials)
+      router.replace("/")
+    } catch (caughtError) {
+      setError(caughtError instanceof Error
+        ? caughtError.message
+        : "Connexion impossible. Vérifiez vos identifiants et réessayez.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-black p-6">
-      
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-zinc-950">
-        
-        <div className="relative hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md font-bold text-white border border-white/20 shadow-inner">
-              G
-            </div>
-            <span className="text-xl font-semibold tracking-wide">GProd</span>
-          </div>
+    <main className="grid min-h-dvh w-full bg-background text-foreground lg:grid-cols-2">
+      <section className="relative hidden min-h-dvh overflow-hidden bg-[var(--palette-espresso)] px-12 py-10 text-[var(--palette-ivory)] lg:flex lg:flex-col lg:justify-between xl:px-16 xl:py-12">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-36 -top-32 size-[32rem] rounded-full border border-[color-mix(in_srgb,var(--palette-taupe)_25%,transparent)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-52 -left-32 size-[34rem] rounded-full border border-[color-mix(in_srgb,var(--palette-cocoa)_70%,transparent)]" />
 
-          <div className="space-y-4 my-auto">
-            <h1 className="text-4xl font-extrabold tracking-tight leading-tight">
-              Toute votre production, <span className="text-amber-300">au même endroit.</span>
-            </h1>
-            <p className="text-sm text-zinc-300 leading-relaxed">
-              Produits, catégories, fournisseurs, clients et factures : pilotez l'ensemble de votre activité depuis un tableau de bord unique.
-            </p>
-          </div>
+        <Link href="/" className="relative z-10 inline-flex w-fit items-center gap-3">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-[var(--palette-cocoa)] text-[var(--palette-ivory)]">
+            <Boxes aria-hidden="true" size={25} />
+          </span>
+          <span className="text-2xl font-bold tracking-tight">GProd</span>
+        </Link>
 
-          <div className="text-xs text-zinc-400">
-            © 2026 GProd — Gestion de production
-          </div>
+        <div className="relative z-10 my-auto max-w-xl py-16">
+          <p className="mb-5 text-sm font-medium uppercase tracking-[0.2em] text-[var(--palette-taupe)]">
+            Gestion de production
+          </p>
+          <h1 className="text-5xl font-bold leading-[1.12] tracking-tight xl:text-6xl">
+            Toute votre activité, au même endroit.
+          </h1>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-[var(--palette-stone)]">
+            Gérez vos produits, vos stocks, vos clients et vos factures depuis un espace simple et centralisé.
+          </p>
         </div>
 
-        <div className="flex items-center justify-center p-8 md:p-12 bg-black">
-          <Card className="w-full border-0 bg-transparent shadow-none text-white">
-            <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-2xl font-bold tracking-tight text-white">
-                Paramètres du profil
-              </CardTitle>
-              <CardDescription className="text-zinc-400">
-                Mettez à jour vos informations personnelles ci-dessous.
-              </CardDescription>
-            </CardHeader>
+        <p className="relative z-10 text-sm text-[var(--palette-taupe)]">
+          © {new Date().getFullYear()} GProd · Gestion de production
+        </p>
+      </section>
 
-            <CardContent className="px-0">
-              <form id="form-rhf-input" onSubmit={form.handleSubmit(onSubmit)}>
-                <FieldGroup className="space-y-4">
-                  <Controller
-                    name="username"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid} className="space-y-2">
-                        <FieldLabel htmlFor="form-rhf-input-username" className="text-sm font-medium text-zinc-200">
-                          Nom d'utilisateur
-                        </FieldLabel>
-                        <Input
-                          {...field}
-                          id="form-rhf-input-username"
-                          aria-invalid={fieldState.invalid}
-                          placeholder="Entrez votre nom d'utilisateur"
-                          autoComplete="username"
-                          className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-600 focus-visible:border-purple-500 focus-visible:ring-purple-500/20 rounded-xl h-11"
-                        />
-                        <FieldDescription className="text-xs text-zinc-500">
-                          Entre 3 et 10 caractères (lettres, chiffres et underscores uniquement).
-                        </FieldDescription>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} className="text-red-400 text-xs" />
-                        )}
-                      </Field>
-                    )}
+      <section className="flex min-h-dvh items-center justify-center bg-background px-5 py-10 sm:px-8 lg:px-12">
+        <div className="w-full max-w-md">
+          <Link href="/" className="mb-10 inline-flex items-center gap-3 lg:hidden">
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Boxes aria-hidden="true" size={23} />
+            </span>
+            <span className="text-xl font-bold">GProd</span>
+          </Link>
+
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-9">
+            <header className="mb-8">
+              <p className="mb-2 text-sm font-semibold text-primary">Bienvenue</p>
+              <h2 className="text-3xl font-bold tracking-tight">Connexion</h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Entrez vos identifiants pour accéder à votre tableau de bord.
+              </p>
+            </header>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="login-email" className="mb-2 block text-sm font-medium">Adresse e-mail</label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  autoComplete="username"
+                  value={credentials.email}
+                  onChange={(event) => setCredentials({ ...credentials, email: event.target.value })}
+                  required
+                  placeholder="vous@exemple.com"
+                  className="h-12 rounded-xl border-border bg-background px-3 text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="login-password" className="mb-2 block text-sm font-medium">Mot de passe</label>
+                <div className="relative">
+                  <Input
+                    id="login-password"
+                    type={passwordVisible ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={credentials.password}
+                    onChange={(event) => setCredentials({ ...credentials, password: event.target.value })}
+                    required
+                    className="h-12 rounded-xl border-border bg-background px-3 pr-12 text-foreground"
                   />
-                </FieldGroup>
-              </form>
-            </CardContent>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={passwordVisible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    aria-pressed={passwordVisible}
+                    onClick={() => setPasswordVisible((visible) => !visible)}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
+                  >
+                    {passwordVisible ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+                  </Button>
+                </div>
+              </div>
 
-            <CardFooter className="px-0 pt-6 flex gap-3 bg-none">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => form.reset()}
-                className="flex-1 bg-transparent   text-white rounded-xl h-11"
+              {error && (
+                <p role="alert" className="rounded-xl border border-border bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-12 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                Réinitialiser
+                {isSubmitting ? "Connexion…" : "Se connecter"}
               </Button>
-              <Button 
-                type="submit" 
-                form="form-rhf-input"
-                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium shadow-lg shadow-purple-500/25 rounded-xl h-11 transition-all"
-              >
-                Enregistrer →
-              </Button>
-            </CardFooter>
-          </Card>
+            </form>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Vos identifiants sont transmis de manière sécurisée à votre serveur.
+          </p>
         </div>
-
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }
 
-export default FormRhfInput
+export default LoginForm

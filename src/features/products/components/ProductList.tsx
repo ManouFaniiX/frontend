@@ -10,33 +10,26 @@ export function ProductList() {
   const deleteMutation = useDeleteProduct()
 
   if (isLoading) {
-    return <div className="p-6 text-zinc-400">Chargement des produits...</div>
+    return <div className="p-6 text-muted-foreground">Chargement des produits...</div>
   }
 
   if (error) {
-    return <div className="p-6 text-red-400">Erreur lors du chargement des produits.</div>
+    return <div className="p-6 text-destructive">Erreur lors du chargement des produits.</div>
   }
 
   return (
-    <div className="space-y-6 p-6 bg-black min-h-screen text-white">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Catalogue Produits</h1>
-          <p className="text-sm text-zinc-400">Gérez vos produits, stocks et prix en un clin d'œil.</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="space-y-4 text-foreground">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {products.map((product: Product) => (
-          <Card key={product.id} className="bg-zinc-950 border-white/10 text-white rounded-2xl">
+          <Card key={product.id} className="bg-card border-border text-card-foreground rounded-2xl">
             <CardHeader>
               <CardTitle className="text-lg font-semibold">{product.nom}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-zinc-400">{product.description || "Aucune description"}</p>
+              <p className="text-sm text-muted-foreground">{product.description || "Aucune description"}</p>
               <div className="flex justify-between items-center pt-4">
-                <span className="text-lg font-bold text-amber-300">{product.prix} Ar</span>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <span className="text-lg font-bold text-primary">{product.prix} Ar</span>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground border border-border">
                   Stock : {product.stock}
                 </span>
               </div>
@@ -45,7 +38,7 @@ export function ProductList() {
                   variant="destructive" 
                   size="sm"
                   onClick={() => deleteMutation.mutate(product.id)}
-                  className="bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+                  className="bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
                 >
                   Supprimer
                 </Button>
